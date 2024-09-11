@@ -48,7 +48,13 @@ def main(depart, arrive):
   map_dict = create_map()
 
   all_paths = [[0, depart]]
-  print(all_paths)
+  while(True):
+    shortest_index = 0
+    smallest_value = 10000
+    for path in all_paths:
+      print(map_dict[path[-1]])
+    break
+  #print(all_paths)
 
   
 def test_cases():
