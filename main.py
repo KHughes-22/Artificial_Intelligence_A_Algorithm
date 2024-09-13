@@ -34,26 +34,76 @@ def straight_line_distance(arrive):
 
   return straight_line_distance_dict
 
+#creates a dictionary containing a key of the city and a value of a dictionary to the connecting city and its value
 def create_map():
   map = open("map-2.txt", "r")
   map_dict = {}
   for line in map:
+    city_dict = []
     line_split = line.split('-')
-    map_dict[line_split[0]] = line_split[1][:-1].split(',')
+    connecting_split = line_split[1][:-1].split(',')
+    for connecting_city in connecting_split:
+      split_connecting_city = connecting_city.split('(')
+      city_dict.append([float(split_connecting_city[1].strip(')')), split_connecting_city[0]])
+    map_dict[line_split[0]] = city_dict
   return map_dict
 
   
 def main(depart, arrive):
+  # test_dict = {}
+  # test_dict[1] = {"city": 25}
+  # print(test_dict)
+  # print(test_dict[1]["city"])
+
+
   straight_line_distance_dict = straight_line_distance(arrive)
   map_dict = create_map()
 
-  all_paths = [[0, depart]]
+  
+  all_paths = [x for x in map_dict[depart]]
+  shortest_path_index = 0
+  shortest_value = 10000
+  current_index = 0
   while(True):
-    shortest_index = 0
-    smallest_value = 10000
-    for path in all_paths:
-      print(map_dict[path[-1]])
+    for next_city in all_paths:
+      current_straight_value = next_city[0] + straight_line_distance_dict[next_city[1]]
+      if current_straight_value < shortest_value:
+        shortest_value = current_straight_value
+        shortest_path_index = current_index
+      current_index += 1
+    shortest = all_paths[shortest_path_index]
+    print(id(shortest))
+    print(id(all_paths[shortest_path_index]))
+    # for next_connecting in map_dict[shortest[1]]:
+    #   print()
+    #   temp = all_paths[shortest_path_index].append(next_connecting)
+    #   all_paths.append(temp)
+
+
+    print(all_paths)
+    all_paths.pop(shortest_path_index)
     break
+  print(all_paths)
+                      
+
+
+
+  # all_paths = [[0, depart]]
+  # while(True):
+  #   shortest_index = 0
+  #   smallest_value = 10000
+  #   for path in all_paths:
+  #     print(path)
+      
+  #     for next_city in map_dict[path[-1]]:
+
+  #       current_value = path[0] + next_city[0]
+  #       if current_value + straight_line_distance_dict[next_city[1]] < smallest_value:
+  #         shortest_index = next_city
+        
+  #       #print(current_value)
+  #   #print(shortest_index)
+  #   break
   #print(all_paths)
 
   
