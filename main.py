@@ -1,19 +1,29 @@
 import sys
 import math
-import re
 
-#straight line formula
-#returns float
 def expression(city1,arrive):
+  """
+  Uses the Haversine formula to calculate the straight line distance between two cities
+
+  :param str city1: the current city to the destination
+  :param str arrive: the destination that we would get the straight line to
+  :return: the Haversine calculation
+  """
   if (city1 == arrive):
     return 0
   else:
-    return((2 * 3958.8 * math.sqrt((math.sin((arrive[0] - city1[0]) / 2) ** 2) + 
-                                   (math.cos(city1[0]) * math.cos(arrive[0]) * (math.sin((arrive[1] - city1[1]) / 2) ** 2)) )))
+    return(math.pi / 180 * ((2 * 3958.8 * math.sqrt((math.sin((arrive[0] - city1[0]) / 2) ** 2) + 
+                                   (math.cos(city1[0]) * math.cos(arrive[0]) * (math.sin((arrive[1] - city1[1]) / 2) ** 2)) ))))
 
-#Gets the distance between two points.
-#returns a list of the city and the distance between the city and the arrival city [str, float]
+
 def straight_line_distance(arrive):
+  """
+  Opens coordinates and gets the distance between 
+
+  :param str: the destination city
+  :return: a dictionary {str, float} containing the the current city and the Haversine calculation
+  """
+
   coords = open("coordinates-2.txt", "r")
   arrive_coords = []
   #find the coordinates of the arrive city and stor in arrive_coords
@@ -36,6 +46,11 @@ def straight_line_distance(arrive):
 
 #creates a dictionary containing a key of the city and a value of a dictionary to the connecting city and its value
 def create_map():
+  """
+  creates a dictionary using the map2
+
+  :return: returns a dictionary Key: starting city, value: the corresponding cities
+  """
   map = open("map-2.txt", "r")
   map_dict = {}
   for line in map:
@@ -50,66 +65,58 @@ def create_map():
 
   
 def main(depart, arrive):
-  # test_dict = {}
-  # test_dict[1] = {"city": 25}
-  # print(test_dict)
-  # print(test_dict[1]["city"])
+  """
+  finds the shortes path using the A* algorithm and prints the output
 
-
+  :param str depart: the departing city
+  :param str arrive: the arriving city
+  """
   straight_line_distance_dict = straight_line_distance(arrive)
   map_dict = create_map()
 
-  
   all_paths = [x for x in map_dict[depart]]
   shortest_path_index = 0
-  shortest_value = 10000
-  current_index = 0
-  while(True):
+  shortest_value = 50000
+  path_found = False
+
+  while(not path_found):
+    current_index = 0
+    shortest_value = all_paths[0][0] + straight_line_distance_dict[all_paths[0][-1]]
+    shortest_path_index = 0
+
     for next_city in all_paths:
-      current_straight_value = next_city[0] + straight_line_distance_dict[next_city[1]]
-      if current_straight_value < shortest_value:
-        shortest_value = current_straight_value
-        shortest_path_index = current_index
+      #next_city[0] is your current value for the path and add to straight line distance to arrive
+      if(next_city[1] not in all_paths[current_index]):
+        current_straight_value = next_city[0] + straight_line_distance_dict[next_city[-1]]
+        if current_straight_value < shortest_value:
+          shortest_value = current_straight_value
+          shortest_path_index = current_index
       current_index += 1
-    shortest = all_paths[shortest_path_index]
-    print(id(shortest))
-    print(id(all_paths[shortest_path_index]))
-    # for next_connecting in map_dict[shortest[1]]:
-    #   print()
-    #   temp = all_paths[shortest_path_index].append(next_connecting)
-    #   all_paths.append(temp)
 
-
-    print(all_paths)
-    all_paths.pop(shortest_path_index)
-    break
-  print(all_paths)
-                      
-
-
-
-  # all_paths = [[0, depart]]
-  # while(True):
-  #   shortest_index = 0
-  #   smallest_value = 10000
-  #   for path in all_paths:
-  #     print(path)
+      if (straight_line_distance_dict[all_paths[shortest_path_index][-1]] == 0):
+        path_found = True
       
-  #     for next_city in map_dict[path[-1]]:
+      #create a new path while updating the current value.
+      #all new paths would be the current path plus all nodes linked to shortest path
+      else:
+        for x in map_dict[all_paths[shortest_path_index][-1]]:
+          #print(x)
+          temp = all_paths[shortest_path_index].copy()
+          temp[0] = temp[0] + x[0]
+          temp.append(x[1])
+          all_paths.append(temp)
 
-  #       current_value = path[0] + next_city[0]
-  #       if current_value + straight_line_distance_dict[next_city[1]] < smallest_value:
-  #         shortest_index = next_city
-        
-  #       #print(current_value)
-  #   #print(shortest_index)
-  #   break
-  #print(all_paths)
+      #remove the shortest path that doesn't contain the new cities
+        all_paths.pop(shortest_path_index)
 
-  
-def test_cases():
-  main("SanJose", "Sacramento")
+  print("From city: " + depart + '\n')
+  print("To City: " + arrive + '\n')
+  print("Best Route: " + depart, end =' - ')
+  for element in all_paths[shortest_path_index][1:-1]:
+    print(element, '-', end = '')
+  print(' ' + all_paths[shortest_path_index][-1])
+  print("\nTotal distance: {:0.2f}".format(all_paths[shortest_path_index][0]))
+  print()
 
 if __name__ == "__main__":
-  test_cases()
-  #main(sys.argv[1], sys.argv[2])
+  main(sys.argv[1], sys.argv[2])
